@@ -23,13 +23,23 @@ const dbConnectCVE = function() {
   return db.collection(process.env.COLLECTION3);
 };
 
-const createNewCollection = async function(collectionName) {
-  return newCollection = await db.createCollection(process.env.NEW_COLLECTION);
+const createNewSoftwareCPECollection = function() {
+  return db.createCollection(process.env.NEW_SOFTWARE_CPE_COLLECTION);
+};
+
+const createNewHardwareCPECollection = function() {
+  return db.createCollection(process.env.NEW_HARDWARE_CPE_COLLECTION);
+};
+
+const createPendingChangesCollection = function() {
+  return db.createCollection(process.env.PENDING_CHANGES_COLLECTION);
 };
 
 module.exports = {
   dbConnectHardwareCPE: dbConnectHardwareCPE,
   dbConnectSoftwareCPE: dbConnectSoftwareCPE,
   dbConnectCVE: dbConnectCVE,
-  createNewCollection: createNewCollection
+  createNewSoftwareCPECollection: createNewSoftwareCPECollection,
+  createNewHardwareCPECollection: createNewHardwareCPECollection,
+  createPendingChangesCollection: createPendingChangesCollection
 }

@@ -241,7 +241,3 @@ async function getCVE(matchingCPEDesc)
 app.listen(process.env.PORT_NO, function() {
   console.log("Server started.");
 });
-
-
-// "fix:#issue_no commit msg"
-// "feat:#"
