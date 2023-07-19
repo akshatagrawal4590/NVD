@@ -1,0 +1,63 @@
+# README: Code Overview of 'softwareCPE_script.js'
+
+This code is designed to process software CPE (Common Platform Enumeration) and CVE (Common Vulnerabilities and Exposures) data using MongoDB. It establishes connections to the required MongoDB collections using the `mongo_connect.js` module and executes a script to handle the data processing.
+
+## Functions and Control Flow
+
+### `runScript()`
+This is the main function that executes the script. It performs the following steps:
+1. Establishes connections to the MongoDB collections for software CPE and CVE data using the `dbConnectSoftwareCPE()` and `dbConnectCVE()` functions, respectively.
+2. Retrieves a list of software CPE names by calling the `getAllCPENames()` function and passing the `collection1` as an argument.
+3. Sets the `size` variable to define the batch size for processing the CPE names.
+4. Defines an array `x` with specific software CPE names to be processed.
+5. Calls the `getCPEArray()` function, passing the software CPE names, the two MongoDB collections, and the batch size as arguments.
+6. Handles any errors that occur during the execution and logs them to the console.
+
+### `getAllCPENames(collection1)`
+This function retrieves all the distinct software CPE names from the `collection1` MongoDB collection. It follows these steps:
+1. Calls the `distinct()` method on `collection1` with the "name" field as the parameter.
+2. Returns an array of distinct software CPE names.
+3. Handles any errors that occur during the execution and logs them to the console.
+4. Returns the array of software CPE names.
+
+### `getCPEArray(cpeNames, collection1, collection2, size)`
+This function processes the software CPE names in batches and returns an array containing the results for each batch. It performs the following actions:
+1. Calls the `createNewSoftwareCPECollection()` function to create a new MongoDB collection, `newCollection`, for storing the processed data.
+2. Divides the software CPE names into batches based on the specified `size` parameter.
+3. Iterates through each batch and executes the following steps:
+   - Initializes temporary arrays, `tempArr` and `batchErrors`, to store the processed data and any encountered errors.
+   - Enters a loop while there are still software CPE names remaining in the current batch.
+   - Calls the `processBatch()` function to process the software CPE names, passing the necessary arguments.
+   - Checks if the result from `processBatch()` has an array of versions. If true, adds the result to `tempArr`; otherwise, adds it to `batchErrors`.
+   - Once all software CPE names in the batch are processed, adds an object to the `cpeArray` array, containing the batch number, the processed data in `tempArr`, and any errors in `batchErrors`.
+4. Logs the completion of all batches.
+5. Returns the `cpeArray` containing the processed data for each batch.
+
+### `processBatch(batch, collection1, collection2, newCollection)`
+This function processes a single batch of software CPE names. The steps involved are as follows:
+1. Retrieves and removes the first software CPE name from the batch using `batch.shift()`.
+2. Constructs a MongoDB pipeline with the necessary stages to match the software CPE name in `collection1` and project relevant fields.
+3. Executes the pipeline using the `aggregate()` method on `collection1` and stores the result in `itemArray`.
+4. Iterates through each item in `itemArray` and performs the following actions:
+   - Extracts the software CPE name from the item and assigns it to the `cpeName` variable.
+   - Tries to find CVEs associated with the software CPE name by querying `collection2` using the `$elemMatch` operator.
+   - Stores the returned CVEs in `cveNameArray`.
+   - If an error occurs during the query, assigns an error message to `itemArray[i].cves`.
+5. Creates a result object containing the software name (`item`) and the associated versions (`itemArray`).
+6. Inserts the result object into the `newCollection` using the `insertOne()` method.
+7. Returns the result object.
+
+## Global Constants
+
+The code imports the following global constants from the `"../mongo_connect.js"` module:
+- `dbConnectSoftwareCPE`: Represents the function to establish a connection with the MongoDB collection for software CPE data.
+- `dbConnectCVE`: Represents the function to establish a connection with the MongoDB collection for CVE data.
+- `createNewSoftwareCPECollection`: Represents the function to create a new MongoDB collection for storing processed software CPE data.
+
+## Running the Code
+
+To run this code and execute the software CPE data processing:
+1. Make sure MongoDB is properly installed and running.
+2. Set up the `mongo_connect.js` file with the correct connection details for your MongoDB instance.
+3. Install any necessary dependencies, such as the MongoDB driver, using `npm` or your preferred package manager.
+4. Execute the code by running the script using Node.js (`node yourScript.js`) or integrate it into your project as needed.

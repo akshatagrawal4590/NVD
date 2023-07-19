@@ -1,0 +1,65 @@
+# README: Code Overview of 'hardwareCPE_script.js'
+
+This code performs a specific task involving hardware CPE (Common Platform Enumeration) and CVE (Common Vulnerabilities and Exposures)
+data processing using MongoDB. It connects to the MongoDB server using the `mongo_connect.js` module and executes a script to handle
+the data.
+
+## Functions and Control Flow
+
+### `runScript()`
+This is the entry point function that starts the execution of the script. It performs the following steps:
+1. Establishes connections to the MongoDB collections for hardware CPE and CVE data using the `dbConnectHardwareCPE()` and
+   `dbConnectCVE()` functions, respectively.
+2. Retrieves a list of all CPE names by calling the `getAllCPENames()` function and passing the `collection1` as an argument.
+3. Sets the `size` variable to define the batch size for processing the CPE names.
+4. Calls the `getCPEArray()` function, passing the CPE names, the two MongoDB collections, and the batch size as arguments.
+5. Handles any errors that occur during the execution and logs them to the console.
+
+### `getAllCPENames(collection1)`
+This function retrieves all the distinct CPE model names from the `collection1` MongoDB collection. It follows these steps:
+1. Queries the MongoDB collection using the `distinct()` method with the "model" field as the parameter.
+2. Returns the array of CPE names.
+3. Handles any errors that occur during the execution and throws the error to be caught by the caller.
+
+### `getCPEArray(cpeNames, collection1, collection2, size)`
+This function processes the CPE names in batches and returns an array containing the results for each batch. It performs the following
+actions:
+1. Calls the `createNewHardwareCPECollection()` function to create a new MongoDB collection, `newCollection`, for storing the processed data.
+2. Divides the CPE names into batches based on the specified `size` parameter.
+3. Iterates through each batch and executes the following steps:
+   - Initializes temporary arrays, `tempArr` and `batchErrors`, to store the processed data and any encountered errors.
+   - Enters a loop while there are still CPE names remaining in the current batch.
+   - Calls the `processBatch()` function to process the CPE names, passing the necessary arguments.
+   - Checks if the result from `processBatch()` has an array of versions. If true, adds the result to `tempArr`; otherwise, adds it to `batchErrors`.
+   - Once all CPE names in the batch are processed, adds an object to the `cpeArray` array, containing the batch number, the processed data in `tempArr`, and any errors in `batchErrors`.
+4. Logs the completion of all batches.
+5. Returns the `cpeArray` containing the processed data for each batch.
+
+### `processBatch(batch, collection1, collection2, newCollection)`
+This function processes a single batch of CPE names. The steps involved are as follows:
+1. Retrieves and removes the first CPE name from the batch using `batch.shift()`.
+2. Constructs a MongoDB pipeline with the necessary stages to match the CPE name in `collection1` and project relevant fields.
+3. Executes the pipeline using the `aggregate()` method on `collection1` and stores the result in `itemArray`.
+4. Iterates through each item in `itemArray` and performs the following actions:
+   - Extracts the CPE name from the item and assigns it to the `cpeName` variable.
+   - Tries to find CVEs associated with the CPE name by querying `collection2` using the `$elemMatch` operator.
+   - Stores the returned CVEs in `cveNameArray`.
+   - If an error occurs during the query, assigns an error message to `itemArray[i].cves`.
+5. Creates a result object containing the hardware name (`item`) and the associated versions (`itemArray`).
+6. Inserts the result object into the `newCollection` using the `insertOne()` method.
+7. Returns the result object.
+
+## Global Constants
+
+The code imports the following global constants from the `"../mongo_connect.js"` module:
+- `dbConnectHardwareCPE`: Represents the function to establish a connection with the MongoDB collection for hardware CPE data.
+- `dbConnectCVE`: Represents the function to establish a connection with the MongoDB collection for CVE data.
+- `createNewHardwareCPECollection`: Represents the function to create a new MongoDB collection for storing processed data.
+
+## Running the Code
+
+To run this code and execute the data processing task:
+1. Ensure that MongoDB is properly installed and running.
+2. Set up the `mongo_connect.js` file with the correct connection details for your MongoDB instance.
+3. Install any necessary dependencies, such as the MongoDB driver, using `npm` or your preferred package manager.
+4. Execute the code by running the script using Node.js (`node yourScript.js`) or integrate it into your project as needed.

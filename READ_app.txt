@@ -1,0 +1,80 @@
+# README: Code Overview of 'app.js'
+
+This code implements an API server using Express.js and MongoDB to retrieve and process CPE (Common Platform Enumeration) and CVE (Common Vulnerabilities and Exposures) data. It provides an endpoint `/cpe/:type/:cpeName/:cpeVendor?/:cpeVersion?/:sortByDate?` to fetch relevant CPE and CVE information based on the provided parameters.
+
+## Prerequisites
+- Ensure that MongoDB is properly installed and running.
+- Install the required dependencies by running `npm install`.
+
+## Running the Code
+1. Set up a `.env` file and configure the environment variables, including `PORT_NO` for the server port number.
+2. Run the code by executing `node yourScript.js` or using your preferred method.
+
+## API Endpoint: `/cpe/:type/:cpeName/:cpeVendor?/:cpeVersion?/:sortByDate?`
+This endpoint handles GET requests to retrieve CPE and CVE information based on the provided parameters.
+
+### Parameters
+- `:type`: Specifies the CPE type (`"h"` for hardware or `"s"` for software).
+- `:cpeName`: Specifies the CPE name.
+- `:cpeVendor` (optional): Specifies the CPE vendor.
+- `:cpeVersion` (optional): Specifies the CPE version.
+- `:sortByDate` (optional): Specifies whether to sort the results by date (`"1"` for ascending order).
+
+### Response
+The response is a JSON object containing the following information:
+- For hardware CPE (`:type = "h"`):
+  - `hardware_CPEs`: An array of hardware CPE documents matching the provided parameters.
+  - `matching_CVEs`: An array of objects containing the hardware CPE name and the associated matching CVEs.
+  - `sorted_CVEs`: An array of objects containing the hardware CPE name and the associated matching CVEs, sorted based on the specified sorting criteria.
+- For software CPE (`:type = "s"`):
+  - `software_CPEs`: An array of software CPE documents matching the provided parameters.
+  - `matching_CVEs`: An array of objects containing the software CPE name and the associated matching CVEs.
+  - `sorted_CVEs`: An array of objects containing the software CPE name and the associated matching CVEs, sorted based on the specified sorting criteria.
+
+### Error Handling
+If any error occurs during the request processing, an error message will be returned in the response.
+
+## Helper Functions
+
+### `compareTime(timeA, timeB)`
+- Compares two timestamps (`timeA` and `timeB`) and returns the comparison result.
+- Used for sorting CVEs based on the last modified time.
+
+### `getLastModifiedTime(name, documents)`
+- Retrieves the last modified time for a given CPE `name` from the provided `documents` array.
+- Used in the sorting process.
+
+### `getVersionFromCPE(cpeName)`
+- Extracts the version number from a given CPE `cpeName`.
+- Used in the version comparison process.
+
+### `compareVersions(versionA, versionB)`
+- Compares two versions (`versionA` and `versionB`) and returns the comparison result.
+- Used for sorting CPEs based on version numbers.
+
+### `getCVE(matchingCPEDesc)`
+- Retrieves CVE documents that match the given `matchingCPEDesc` array.
+- Queries the CVE collection and returns the matching CVEs.
+
+## Global Constants
+
+The code imports the following global constants from the `mongo_connect.js` module:
+- `dbConnectHardwareCPE`: Establishes a connection to the MongoDB collection for hardware CPE data.
+- `dbConnectSoftwareCPE`: Establishes a connection to the MongoDB collection for software CPE data.
+- `dbConnectCVE`: Establishes a connection to the MongoDB collection for CVE data.
+
+## Control Flow and Conditional Statements
+
+The code utilizes conditional statements (`if-else`) to handle different scenarios and customize the data retrieval process.
+
+### `/cpe/:type/:cpeName/:cpeVendor?/:cpeVersion?/:sortByDate?` Endpoint
+- The code checks the provided parameters to determine the type of CPE (`hardware` or `software`), CPE name, vendor, version, and sorting preference.
+- Based on the parameters, the code connects to the respective MongoDB collections (`collection1` for hardware CPE, `collection2` for software CPE) using the appropriate connection functions (`dbConnectHardwareCPE`, `dbConnectSoftwareCPE`).
+- Depending on the presence or absence of the `cpeVendor` and `cpeVersion` parameters, different queries are constructed to retrieve the matching documents from the collections.
+- If matching CPE documents are found, the code builds an array of matching CPE descriptions (`matchingCPEDesc`).
+- The `getCVE` function is called to retrieve CVE documents that match the `matchingCPEDesc` array.
+- The code filters and sorts the retrieved documents based on the sorting criteria and constructs the response JSON object.
+- The response object is sent back to the client.
+
+### Error Handling
+- If any error occurs during the request processing, an error message is generated and sent in the response.
