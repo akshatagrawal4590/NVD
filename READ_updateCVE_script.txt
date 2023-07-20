@@ -1,0 +1,55 @@
+# README: Code Overview of 'updateCVE_script.js'
+
+This script updates CVE (Common Vulnerabilities and Exposures) data by fetching the latest changes from the NVD (National Vulnerability Database) API and applying them to the existing MongoDB collection.
+
+## Prerequisites
+- Ensure that MongoDB is properly installed and running.
+- Install the required dependencies by running `npm install`.
+
+## Running the Script
+1. Set up a `.env` file and configure the environment variables, if necessary.
+2. Run the script by executing `node yourScript.js` or using your preferred method.
+
+## Code Overview
+
+The script consists of the following main components:
+
+### Configuration Constants
+- `days`: Specifies the number of days to consider when fetching the CVE changes.
+- `now`: Represents the current date and time.
+- `endDate`: The end date for fetching changes in the NVD API URL.
+- `startDate`: The start date for fetching changes in the NVD API URL.
+- `url`: The URL to fetch the CVE history changes from the NVD API.
+- `cvssV2Map`: A mapping object that defines the conversion of CVSS V2 properties.
+- `vectorV2Map`: A mapping object that defines the conversion of CVSS V2 vector values.
+- `vectorValueV2Map`: A mapping object that defines the corresponding scores for CVSS V2 vector values.
+- `cvssV3_1Map`: A mapping object that defines the conversion of CVSS V3.1 properties.
+- `vectorV3_1Map`: A mapping object that defines the conversion of CVSS V3.1 vector values.
+- `vectorValueV3_1Map`: A mapping object that defines the corresponding scores for CVSS V3.1 vector values.
+
+### Data Fetching
+The `fetchData` function makes an HTTP GET request to the NVD API URL using Axios. It retrieves the JSON response containing the CVE history changes and returns the data.
+
+### Handling Reference Type Changes
+The `handleReference_Type` function handles changes related to reference types. It checks the action (Added, Changed, or Removed) and performs the necessary modifications to the existing document or adds the change to the pending document.
+
+### Handling CWE Changes
+The `handleCWE` function handles changes related to CWE (Common Weakness Enumeration) values. It checks the action (Added, Removed) and modifies the existing document accordingly or adds the change to the pending document.
+
+### Handling Reference Changes
+The `handleReference` function handles changes related to references. It checks the action (Added, Removed) and updates the existing document or adds the change to the pending document.
+
+### Handling CVSS V2 Changes
+The `handleCVSSV2` function handles changes related to CVSS V2 scores. It checks the action (Added, Removed) and processes the changes, updating the existing document or adding the change to the pending document.
+
+### Handling CVSS V3.1 Changes
+The `handleCVSSV3_1` function handles changes related to CVSS V3.1 scores. It checks the action (Added, Removed) and applies the changes to the existing document or adds the change to the pending document.
+
+### Updating CVEs
+The `updateCVEs` function is responsible for updating the existing CVE documents based on the fetched changes. It iterates through the changes array, retrieves the existing document for each CVE ID, and applies the changes using the corresponding handler functions. If a change cannot be applied, it adds the change to the pending document for further processing. Finally, it replaces the existing document with the updated one and inserts the pending changes into a new collection.
+
+### Running the Script
+The `runScript` function orchestrates the execution of the script. It fetches the CVE changes, establishes the MongoDB connections, and calls the `updateCVEs` function to update the documents.
+
+## Error Handling
+The script includes basic error handling using try-catch blocks. If any error occurs during the execution, it will be logged to the console.
